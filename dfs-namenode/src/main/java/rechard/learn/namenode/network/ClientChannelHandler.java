@@ -2,10 +2,12 @@ package rechard.learn.namenode.network;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Rechard
  **/
+@Slf4j
 public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -19,8 +21,10 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println(ctx.channel().id() + "连接");
+        log.info("客户端连接{}成功", ctx.channel().remoteAddress());
         super.channelActive(ctx);
+        //将自己的消息上报给对方
+        ctx.channel().writeAndFlush("我是客户端");
     }
 
     @Override

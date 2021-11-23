@@ -22,3 +22,10 @@
 mvn protobuf:compile && mvn install
 ```
 
+# Netty
+## Netty的handler的顺序会对消息的解析产生重要的影响
+ ![env](doc/error_config_pipeline.png)
+红色表示outbound,我将StringEncode和LengthFieldPrepender配错了位置
+导致server端解析出错
+
+

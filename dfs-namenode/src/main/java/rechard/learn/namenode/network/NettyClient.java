@@ -1,9 +1,13 @@
 package rechard.learn.namenode.network;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.util.concurrent.ExecutorService;
 
@@ -26,6 +30,9 @@ public class NettyClient {
     public ConnectFuture connectAsync(String host, int port) {
         BaseChannelInitializer clientChannelInitializer = new BaseChannelInitializer();
         clientChannelInitializer.addHandler(new ClientChannelHandler());
+        //outbound
+        clientChannelInitializer.addHandler(new LengthFieldPrepender(4));
+        clientChannelInitializer.addHandler(new StringEncoder()); //加个消息的格式化 decoder
 
         Bootstrap bootstrap = new Bootstrap();
         final ConnectFuture future = new ConnectFuture();
@@ -33,6 +40,9 @@ public class NettyClient {
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
                 .handler(clientChannelInitializer)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //堆外连接
                 .connect(host, port);
         channelFuture.addListener(f -> {
             if (f.isSuccess()) {
