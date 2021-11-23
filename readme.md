@@ -11,7 +11,10 @@
 需要重写handler里的exceptionCaught()
 
 
-- 在做retry的时候，我的代码就是一台server不行，换另台重试 
+
+- io.netty.channel.ChannelPipelineException: rechard.learn.namenode.network.NettyServerChannelHandler is not a @Sharable handler, so can't be added or removed multiple times.
+ **解决：**
+在 NettyServerChannelHandler上加上@Sharable# hdfs
 
 # protobuf
 
@@ -19,5 +22,3 @@
 mvn protobuf:compile && mvn install
 ```
 
-- io.netty.channel.ChannelPipelineException: rechard.learn.namenode.network.NettyServerChannelHandler is not a @Sharable handler, so can't be added or removed multiple times.
-在 NettyServerChannelHandler上加上@Sharable# hdfs
