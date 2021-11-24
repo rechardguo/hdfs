@@ -52,6 +52,9 @@ public  class BaseChannelInitializer extends ChannelInitializer {
 **解决**
 代码里未注释部分
 
+- java.lang.UnsupportedOperationException: direct buffer
+直接堆内存不支持转成byte[]操作
+
 # protobuf
 
 ```

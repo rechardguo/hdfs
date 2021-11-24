@@ -34,15 +34,17 @@ public class PacketDecoder extends LengthFieldBasedFrameDecoder {
                 int headerLength = msg.readInt();
                 NettyPacketHeader nettyPacketHeader = null;
                 if (headerLength > 0) {
-                    ByteBuf headerByteBuf = msg.readBytes(headerLength);
-                    nettyPacketHeader = NettyPacketHeader.parseFrom(headerByteBuf.array());
+                    // ByteBuf headerByteBuf = msg.readBytes(headerLength);
+                    byte[] headerBytes = new byte[headerLength];
+                    nettyPacketHeader = NettyPacketHeader.parseFrom(headerBytes);
                 }
-                int bodyLength = msg.getInt(BODY_LENGTH);
-                ByteBuf bodyByteBuf = msg.readBytes(bodyLength);
+                int bodyLength = msg.readInt();
+                byte[] bodyBytes = new byte[bodyLength];
+                msg.readBytes(bodyBytes);
                 Packet<Object> packet = Packet.builder()
                         .msgType(msgType)
                         .header(nettyPacketHeader == null ? null : nettyPacketHeader.getHeadersMap())
-                        .body(bodyByteBuf.array())
+                        .body(bodyBytes)
                         .build();
                 return packet;
             } catch (Exception e) {
