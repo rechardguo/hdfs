@@ -7,7 +7,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.string.StringEncoder;
 
 import java.util.concurrent.ExecutorService;
 
@@ -29,11 +28,11 @@ public class NettyClient {
      */
     public ConnectFuture connectAsync(String host, int port) {
         BaseChannelInitializer clientChannelInitializer = new BaseChannelInitializer();
-        clientChannelInitializer.addHandler(new ClientChannelHandler());
+        clientChannelInitializer.addHandler(NettyClientChannelHandler::new);
         //outbound
-        clientChannelInitializer.addHandler(new LengthFieldPrepender(4));
-        clientChannelInitializer.addHandler(new StringEncoder()); //加个消息的格式化 decoder
-
+        clientChannelInitializer.addHandler(() -> new LengthFieldPrepender(4));
+        //clientChannelInitializer.addHandler(new StringEncoder()); //加个消息的格式化 decoder
+        clientChannelInitializer.addHandler(PacketEncoder::new);
         Bootstrap bootstrap = new Bootstrap();
         final ConnectFuture future = new ConnectFuture();
         ChannelFuture channelFuture = bootstrap

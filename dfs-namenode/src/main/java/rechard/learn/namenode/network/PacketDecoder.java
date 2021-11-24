@@ -1,0 +1,56 @@
+package rechard.learn.namenode.network;
+
+import com.ruyuan.dfs.model.common.NettyPacketHeader;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
+import lombok.extern.slf4j.Slf4j;
+import rechard.learn.namenode.protocol.Packet;
+
+import static rechard.learn.namenode.constant.NameNodeConstant.MAX_MSG_LENGTH;
+
+/**
+ * @author Rechard
+ **/
+@Slf4j
+public class PacketDecoder extends LengthFieldBasedFrameDecoder {
+    private static final int MSGTYPE_LENGTH = 4;
+    private static final int HEADER_LENGTH = 4;
+    private static final int BODY_LENGTH = 4;
+
+    //通过协议拆分包后得到
+    public PacketDecoder() {
+        super(MAX_MSG_LENGTH, 0,
+                4, 0, 4);
+    }
+
+    @Override
+    public Object decode(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
+        ByteBuf msg = (ByteBuf) super.decode(ctx, byteBuf);
+        if (msg != null) {
+            try {
+                int msgType = msg.readInt();
+                int headerLength = msg.readInt();
+                NettyPacketHeader nettyPacketHeader = null;
+                if (headerLength > 0) {
+                    ByteBuf headerByteBuf = msg.readBytes(headerLength);
+                    nettyPacketHeader = NettyPacketHeader.parseFrom(headerByteBuf.array());
+                }
+                int bodyLength = msg.getInt(BODY_LENGTH);
+                ByteBuf bodyByteBuf = msg.readBytes(bodyLength);
+                Packet<Object> packet = Packet.builder()
+                        .msgType(msgType)
+                        .header(nettyPacketHeader == null ? null : nettyPacketHeader.getHeadersMap())
+                        .body(bodyByteBuf.array())
+                        .build();
+                return packet;
+            } catch (Exception e) {
+                log.error("error decode message", e);
+            } finally {
+                ReferenceCountUtil.release(byteBuf);
+            }
+        }
+        return null;
+    }
+}

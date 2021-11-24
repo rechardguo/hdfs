@@ -36,5 +36,8 @@ public class NettyServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         super.channelRead(ctx, msg);
         System.out.println(ctx.channel().remoteAddress() + "发送消息：" + msg);
+        //收到消息需要处理
+        //处理不能在这里面做处理，参考rocketmq的做法，定义1个threadpoolexecutor来处理
+        //需要将消息先封装然后交给processor来处理
     }
 }

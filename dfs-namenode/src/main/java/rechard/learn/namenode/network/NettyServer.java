@@ -4,11 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
 import rechard.learn.namenode.config.NameNodeConfig;
-
-import static rechard.learn.namenode.constant.NameNodeConstant.MAX_MSG_LENGTH;
 
 /**
  * @author Rechard
@@ -22,11 +18,11 @@ public class NettyServer {
 
     public void start() {
         BaseChannelInitializer serverChannelInitializer = new BaseChannelInitializer();
-        serverChannelInitializer.addHandler(
-                new LengthFieldBasedFrameDecoder(MAX_MSG_LENGTH, 0,
-                        4, 0, 4));
-        serverChannelInitializer.addHandler(new StringDecoder());//客户端使用stringEncoder，则这里StringDecoder解析
-        serverChannelInitializer.addHandler(new NettyServerChannelHandler());
+//        serverChannelInitializer.addHandler(
+//                new LengthFieldBasedFrameDecoder(MAX_MSG_LENGTH, 0,
+//                        4, 0, 4));
+        serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
+        serverChannelInitializer.addHandler(NettyServerChannelHandler::new);
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boss = new NioEventLoopGroup();
