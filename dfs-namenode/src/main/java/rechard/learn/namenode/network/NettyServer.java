@@ -30,16 +30,14 @@ public class NettyServer {
 
         BaseChannelInitializer serverChannelInitializer = new BaseChannelInitializer();
         ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-
-        serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
-
-        serverChannelInitializer.addHandler(() -> {
-            return new NettyServerChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig));
-        });
-
         //outbound
         serverChannelInitializer.addHandler(() -> new LengthFieldPrepender(4));
         serverChannelInitializer.addHandler(PacketEncoder::new);
+        //inbound
+        serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
+        serverChannelInitializer.addHandler(() -> {
+            return new NettyServerChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig));
+        });
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boss = new NioEventLoopGroup();

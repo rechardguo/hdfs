@@ -68,5 +68,9 @@ mvn protobuf:compile && mvn install
 红色表示outbound,我将StringEncode和LengthFieldPrepender配错了位置
 导致server端解析出错
 
+最终的pipeline的图
+ ![env](doc/pipeline.png)
+
+
 
 

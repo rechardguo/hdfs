@@ -37,12 +37,12 @@ public class NettyClient {
      */
     public ConnectFuture connectAsync(String host, int port) {
         BaseChannelInitializer clientChannelInitializer = new BaseChannelInitializer();
-        //inbound
-        clientChannelInitializer.addHandler(PacketDecoder::new);
-        clientChannelInitializer.addHandler(() -> new NettyClientChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig)));
         //outbound
         clientChannelInitializer.addHandler(() -> new LengthFieldPrepender(4));
         clientChannelInitializer.addHandler(PacketEncoder::new);
+        //inbound
+        clientChannelInitializer.addHandler(PacketDecoder::new);
+        clientChannelInitializer.addHandler(() -> new NettyClientChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig)));
 
         Bootstrap bootstrap = new Bootstrap();
         final ConnectFuture future = new ConnectFuture();
