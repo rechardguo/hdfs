@@ -11,6 +11,7 @@
     <modules>
         <module>dfs-namenode</module>
         <module>dfs-protocol</module>
+        <module>dfs-datanode</module>
     </modules>
 
     <properties>

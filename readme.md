@@ -16,7 +16,7 @@
 
 
 - 
-> io.netty.channel.ChannelPipelineException: rechard.learn.namenode.network.NettyServerChannelHandler is not a @Sharable handler, so can't be added or removed multiple times.
+> io.netty.channel.ChannelPipelineException: rechard.learn.namenode.network.NettyChannelHandler is not a @Sharable handler, so can't be added or removed multiple times.
 
 **原因**
 

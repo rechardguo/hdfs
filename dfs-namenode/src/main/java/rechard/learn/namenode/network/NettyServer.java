@@ -4,25 +4,42 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldPrepender;
+import lombok.extern.slf4j.Slf4j;
 import rechard.learn.namenode.config.NameNodeConfig;
+import rechard.learn.namenode.manager.ControllerManager;
+import rechard.learn.namenode.processor.handler.NameNodeApis;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author Rechard
  **/
+@Slf4j
 public class NettyServer {
     NameNodeConfig nameNodeConfig;
+    ControllerManager controllerManager;
 
-    public NettyServer(NameNodeConfig nameNodeConfig) {
+    public NettyServer(NameNodeConfig nameNodeConfig, ControllerManager controllerManager) {
+        this.controllerManager = controllerManager;
         this.nameNodeConfig = nameNodeConfig;
     }
 
     public void start() {
+
         BaseChannelInitializer serverChannelInitializer = new BaseChannelInitializer();
-//        serverChannelInitializer.addHandler(
-//                new LengthFieldBasedFrameDecoder(MAX_MSG_LENGTH, 0,
-//                        4, 0, 4));
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+
         serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
-        serverChannelInitializer.addHandler(NettyServerChannelHandler::new);
+
+        serverChannelInitializer.addHandler(() -> {
+            return new NettyServerChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig));
+        });
+
+        //outbound
+        serverChannelInitializer.addHandler(() -> new LengthFieldPrepender(4));
+        serverChannelInitializer.addHandler(PacketEncoder::new);
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boss = new NioEventLoopGroup();
@@ -34,9 +51,9 @@ public class NettyServer {
         try {
             channelFuture.addListener(future -> {
                 if (future.isSuccess()) {
-                    System.out.println(String.format("服务器启动成功，port=%d", nameNodeConfig.getPort()));
+                    log.info("server started listen on port {}", nameNodeConfig.getPort());
                 } else {
-                    System.err.println(String.format("服务器启动失败"));
+                    log.error("server started failed");
                 }
             }).sync();
         } catch (InterruptedException e) {

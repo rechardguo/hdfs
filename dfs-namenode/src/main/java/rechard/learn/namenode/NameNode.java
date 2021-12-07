@@ -1,6 +1,8 @@
 package rechard.learn.namenode;
 
+import lombok.extern.slf4j.Slf4j;
 import rechard.learn.namenode.config.NameNodeConfig;
+import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.network.NettyClient;
 import rechard.learn.namenode.network.NettyServer;
 import rechard.learn.namenode.peer.PeerNode;
@@ -11,10 +13,12 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * @author Rechard
  **/
+@Slf4j
 public class NameNode {
 
-    public NettyServer nettyServer;
-    public NameNodeConfig nameNodeConfig;
+    private NettyServer nettyServer;
+    private NameNodeConfig nameNodeConfig;
+    private ControllerManager controllerManager;
 
     public NameNode(NameNodeConfig nameNodeConfig) {
         this.nameNodeConfig = nameNodeConfig;
@@ -22,7 +26,8 @@ public class NameNode {
 
     public void start() {
         //1.启动1个nettyserver
-        nettyServer = new NettyServer(nameNodeConfig);
+        controllerManager = new ControllerManager(nameNodeConfig);
+        nettyServer = new NettyServer(nameNodeConfig, controllerManager);
         nettyServer.start();
 
         //2.此时去连接其他的namenode
@@ -37,9 +42,8 @@ public class NameNode {
             //只允许id大的向小的server连接
             if (peerNode.getId() != nameNodeConfig.getNameNodeId()
                     && nameNodeConfig.getNameNodeId() > peerNode.getId()) {
-                System.out.println(String.format("connectting to namenode-%s:%d", peerNode.getHost(), peerNode.getPort()));
-
-                NettyClient nettyClient = new NettyClient(scheduledExecutorService);
+                log.info("connectting to namenode-{}:{}", peerNode.getHost(), peerNode.getPort());
+                NettyClient nettyClient = new NettyClient(scheduledExecutorService, nameNodeConfig, controllerManager);
                 nettyClient.connectAsync(peerNode.getHost(), peerNode.getPort());
                 //什么时候开始选举？当连接成功后，就向服务器发送自己得信息，如果接收到得服务信息和配置一致，就发起选举
                 //首先要先将消息的protol进行定义好
