@@ -1,4 +1,4 @@
-package rechard.learn.namenode.protocol;
+package rechard.learn.dfs.common.network;
 
 import lombok.Builder;
 import lombok.Data;

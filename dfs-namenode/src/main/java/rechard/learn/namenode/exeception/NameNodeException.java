@@ -11,4 +11,8 @@ public class NameNodeException extends Exception {
     public NameNodeException(String message) {
         super(message);
     }
+
+    public NameNodeException(Throwable ex) {
+        super(ex);
+    }
 }

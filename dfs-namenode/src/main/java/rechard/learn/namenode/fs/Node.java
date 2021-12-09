@@ -1,11 +1,10 @@
 package rechard.learn.namenode.fs;
 
+import com.ruyuan.dfs.model.backup.INode;
 import lombok.Data;
 import rechard.learn.namenode.enums.NodeType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * 目录节点
@@ -46,6 +45,28 @@ public class Node {
 
     public boolean isFile() {
         return this.type == NodeType.FILE.getValue();
+    }
+
+    //将node转成protobuf里的node
+    public static INode toINode(Node node) {
+        INode.Builder builder = INode.newBuilder();
+        String path = node.getPath();
+        int type = node.getType();
+        builder.setPath(path);
+        builder.setType(type);
+        builder.putAllAttr(node.getAttr());
+        Collection<Node> children = node.getChildren().values();
+        if (children.isEmpty()) {
+            return builder.build();
+        }
+        List<INode> tmpNode = new ArrayList<>(children.size());
+        for (Node child : children) {
+            //递归
+            INode iNode = toINode(child);
+            tmpNode.add(iNode);
+        }
+        builder.addAllChildren(tmpNode);
+        return builder.build();
     }
 
 }

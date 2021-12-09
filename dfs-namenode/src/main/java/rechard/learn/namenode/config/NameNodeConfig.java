@@ -1,5 +1,6 @@
 package rechard.learn.namenode.config;
 
+import io.netty.util.internal.StringUtil;
 import lombok.Data;
 import rechard.learn.namenode.exeception.NodeNodeFileParseException;
 import rechard.learn.namenode.peer.PeerNode;
@@ -14,6 +15,8 @@ public class NameNodeConfig {
     private String nameNodeServers;
     private int port;
     private int nameNodeId;
+    private String dfsHome;
+    private String pass;
 
     public PeerNode[] getPeerNodes() {
         String[] nameNodes = nameNodeServers.split(",");
@@ -34,5 +37,10 @@ public class NameNodeConfig {
         this.port = Integer.parseInt((String) properties.get("server.port"));
         this.nameNodeId = Integer.parseInt((String) properties.get("server.nameNodeId"));
         this.nameNodeServers = (String) properties.get("namenode.peer.servers");
+        this.pass = (String) properties.get("namenode.conn.requirepass");
+    }
+
+    public boolean authRequired() {
+        return !StringUtil.isNullOrEmpty(this.pass);
     }
 }

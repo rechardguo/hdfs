@@ -4,13 +4,20 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.ruyuan.dfs.model.namenode.NameNodeAwareRequest;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.constant.MsgType;
+import rechard.learn.dfs.common.network.Packet;
 import rechard.learn.namenode.config.NameNodeConfig;
-import rechard.learn.namenode.constant.MsgType;
+import rechard.learn.namenode.fs.FSDirectory;
+import rechard.learn.namenode.fs.FsImage;
 import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.peer.PeerNode;
-import rechard.learn.namenode.protocol.Packet;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
+import static rechard.learn.dfs.common.constant.MsgType.BACK_NODE_AUTH_RESPONSE;
+import static rechard.learn.dfs.common.constant.MsgType.BACK_NODE_FETCH_FSIMAGE_RESPONSE;
 
 /**
  * @author Rechard
@@ -19,11 +26,13 @@ import java.net.InetSocketAddress;
 public class NameNodeApis {
 
     private ControllerManager controllerManager;
+    private FSDirectory fsDirectory;
     private NameNodeConfig nameNodeConfig;
 
-    public NameNodeApis(ControllerManager controllerManager, NameNodeConfig nameNodeConfig) {
+    public NameNodeApis(ControllerManager controllerManager, NameNodeConfig nameNodeConfig, FSDirectory fsDirectory) {
         this.controllerManager = controllerManager;
         this.nameNodeConfig = nameNodeConfig;
+        this.fsDirectory = fsDirectory;
     }
 
     public NameNodeConfig getNameNodeConfig() {
@@ -48,9 +57,35 @@ public class NameNodeApis {
         switch (msgType) {
             case NAME_NODE_PEER_AWARE:
                 processNamenodeAwares(p, ctx);
+            case BACK_NODE_AUTH_REQUEST:
+                handleAuth(p, ctx);
+            case BACK_NODE_FETCH_FSIMAGE_REQUEST:
+                handleImageFetch(p, ctx);
+
         }
     }
 
+    private void handleImageFetch(Packet p, ChannelHandlerContext ctx) {
+        FsImage fsImage = fsDirectory.getFsImage();
+        Packet packet = Packet.builder().msgType(BACK_NODE_FETCH_FSIMAGE_RESPONSE.code())
+                //  .body()
+                .build();
+        ctx.channel().writeAndFlush(packet);
+    }
+
+    private void handleAuth(Packet p, ChannelHandlerContext ctx) {
+        Map header = p.getHeader();
+        Map<String, String> map = new HashMap<>();
+        if (this.nameNodeConfig.getPass().equals(header.get("pass"))) {
+            map.put("result", "ok");
+        } else {
+            map.put("result", "fail");
+        }
+        Packet packet = Packet.builder().msgType(BACK_NODE_AUTH_RESPONSE.code())
+                .header(map)
+                .build();
+        ctx.channel().writeAndFlush(packet);
+    }
 
     //@PacketHandler(type = MsgType.NAME_NODE_PEER_AWARE)
     public void processNamenodeAwares(Packet p, ChannelHandlerContext ctx) {

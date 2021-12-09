@@ -3,13 +3,13 @@ package rechard.learn.namenode.network;
 import com.ruyuan.dfs.model.namenode.NameNodeAwareRequest;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.constant.MsgType;
+import rechard.learn.dfs.common.network.Packet;
+import rechard.learn.dfs.common.utils.DefaultScheduler;
 import rechard.learn.namenode.config.NameNodeConfig;
-import rechard.learn.namenode.constant.MsgType;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
-import rechard.learn.namenode.protocol.Packet;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Rechard
@@ -17,8 +17,8 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class NettyClientChannelHandler extends NettyChannelHandler {
 
-    public NettyClientChannelHandler(ExecutorService executorService, NameNodeApis nameNodeApis) {
-        super(executorService, nameNodeApis);
+    public NettyClientChannelHandler(DefaultScheduler scheduler, NameNodeApis nameNodeApis) {
+        super(scheduler, nameNodeApis);
     }
 
     @Override

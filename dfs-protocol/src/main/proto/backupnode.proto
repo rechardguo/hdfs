@@ -34,6 +34,7 @@ message INode {
 message BackupNodeInfo {
   string hostname = 1;
   int32 port = 2;
+  String secret;
 }
 
 message NameNodeConf {

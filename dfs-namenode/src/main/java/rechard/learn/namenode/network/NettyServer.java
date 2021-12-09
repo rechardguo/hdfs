@@ -6,7 +6,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.network.BaseChannelInitializer;
+import rechard.learn.dfs.common.network.PacketDecoder;
+import rechard.learn.dfs.common.network.PacketEncoder;
 import rechard.learn.namenode.config.NameNodeConfig;
+import rechard.learn.namenode.fs.FSDirectory;
 import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
 
@@ -18,12 +22,14 @@ import java.util.concurrent.Executors;
  **/
 @Slf4j
 public class NettyServer {
-    NameNodeConfig nameNodeConfig;
-    ControllerManager controllerManager;
+    private NameNodeConfig nameNodeConfig;
+    private ControllerManager controllerManager;
+    private FSDirectory fsDirectory;
 
-    public NettyServer(NameNodeConfig nameNodeConfig, ControllerManager controllerManager) {
+    public NettyServer(NameNodeConfig nameNodeConfig, ControllerManager controllerManager, FSDirectory fsDirectory) {
         this.controllerManager = controllerManager;
         this.nameNodeConfig = nameNodeConfig;
+        this.fsDirectory = fsDirectory;
     }
 
     public void start() {
@@ -36,7 +42,8 @@ public class NettyServer {
         //inbound
         serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
         serverChannelInitializer.addHandler(() -> {
-            return new NettyServerChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig));
+            return new NettyServerChannelHandler(threadPool,
+                    new NameNodeApis(controllerManager, nameNodeConfig, fsDirectory));
         });
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();

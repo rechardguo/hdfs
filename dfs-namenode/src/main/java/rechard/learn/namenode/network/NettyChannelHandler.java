@@ -4,10 +4,9 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.network.Packet;
+import rechard.learn.dfs.common.utils.DefaultScheduler;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
-import rechard.learn.namenode.protocol.Packet;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Rechard
@@ -15,11 +14,11 @@ import java.util.concurrent.ExecutorService;
 @ChannelHandler.Sharable
 @Slf4j
 public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
-    protected ExecutorService executorService;
+    protected DefaultScheduler scheduler;
     protected NameNodeApis apis;
 
-    public NettyChannelHandler(ExecutorService executorService, NameNodeApis nameNodeApis) {
-        this.executorService = executorService;
+    public NettyChannelHandler(DefaultScheduler scheduler, NameNodeApis nameNodeApis) {
+        this.scheduler = scheduler;
         this.apis = nameNodeApis;
     }
 
@@ -36,6 +35,7 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("{} connnect to me success", ctx.channel().remoteAddress());
+        //需要验证ctx是否已经验证过，如果没有就要断开连接
         super.channelActive(ctx);
     }
 
@@ -56,7 +56,7 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
             Packet packet = (Packet) msg;
 
             if (this.getThreadPoolExecutor() != null) {
-                this.getThreadPoolExecutor().submit(() -> {
+                this.getThreadPoolExecutor().scheduleOnce("process msgType=" + packet.getMsgType(), () -> {
                     handle(ctx, packet);
                 });
             } else {
@@ -65,8 +65,8 @@ public class NettyChannelHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    public ExecutorService getThreadPoolExecutor() {
-        return this.executorService;
+    public DefaultScheduler getThreadPoolExecutor() {
+        return this.scheduler;
     }
 
     public void handle(ChannelHandlerContext ctx, Packet packet) {

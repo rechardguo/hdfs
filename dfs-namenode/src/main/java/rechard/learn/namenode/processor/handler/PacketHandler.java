@@ -1,6 +1,6 @@
 package rechard.learn.namenode.processor.handler;
 
-import rechard.learn.namenode.constant.MsgType;
+import rechard.learn.dfs.common.constant.MsgType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -8,25 +8,32 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.network.BaseChannelInitializer;
+import rechard.learn.dfs.common.network.ConnectFuture;
+import rechard.learn.dfs.common.network.PacketDecoder;
+import rechard.learn.dfs.common.network.PacketEncoder;
+import rechard.learn.dfs.common.utils.DefaultScheduler;
 import rechard.learn.namenode.config.NameNodeConfig;
+import rechard.learn.namenode.fs.FSDirectory;
 import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Rechard
  **/
 @Slf4j
 public class NettyClient {
-    private ExecutorService threadPool;
+    private DefaultScheduler scheduler;
     private NameNodeConfig nameNodeConfig;
     private ControllerManager controllerManager;
+    private FSDirectory fsDirectory;
 
-    public NettyClient(ExecutorService threadPool, NameNodeConfig nameNodeConfig, ControllerManager controllerManager) {
-        this.threadPool = threadPool;
+    public NettyClient(DefaultScheduler scheduler, NameNodeConfig nameNodeConfig,
+                       ControllerManager controllerManager, FSDirectory fsDirectory) {
+        this.scheduler = scheduler;
         this.nameNodeConfig = nameNodeConfig;
         this.controllerManager = controllerManager;
+        this.fsDirectory = fsDirectory;
     }
 
     /**
@@ -42,7 +49,7 @@ public class NettyClient {
         clientChannelInitializer.addHandler(PacketEncoder::new);
         //inbound
         clientChannelInitializer.addHandler(PacketDecoder::new);
-        clientChannelInitializer.addHandler(() -> new NettyClientChannelHandler(threadPool, new NameNodeApis(controllerManager, nameNodeConfig)));
+        clientChannelInitializer.addHandler(() -> new NettyClientChannelHandler(scheduler, new NameNodeApis(controllerManager, nameNodeConfig, fsDirectory)));
 
         Bootstrap bootstrap = new Bootstrap();
         final ConnectFuture future = new ConnectFuture();

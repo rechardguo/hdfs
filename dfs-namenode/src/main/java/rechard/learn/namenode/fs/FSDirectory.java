@@ -1,5 +1,6 @@
 package rechard.learn.namenode.fs;
 
+import com.ruyuan.dfs.model.backup.INode;
 import rechard.learn.namenode.enums.NodeType;
 import rechard.learn.namenode.exeception.NameNodeException;
 
@@ -22,6 +23,22 @@ public class FSDirectory {
 
     public FSDirectory() {
         this.root = new Node("/", NodeType.DIRECTORY.getValue());
+    }
+
+
+    /**
+     * 根据内存目录树生成FsImage
+     *
+     * @return FsImage
+     */
+    public FsImage getFsImage() {
+        try {
+            lock.readLock().lock();
+            INode iNode = Node.toINode(root);
+            return new FsImage(0L, iNode);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**

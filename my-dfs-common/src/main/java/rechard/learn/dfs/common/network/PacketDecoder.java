@@ -1,4 +1,4 @@
-package rechard.learn.namenode.network;
+package rechard.learn.dfs.common.network;
 
 import com.ruyuan.dfs.model.common.NettyPacketHeader;
 import io.netty.buffer.ByteBuf;
@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
-import rechard.learn.namenode.protocol.Packet;
 
 import static rechard.learn.namenode.constant.NameNodeConstant.MAX_MSG_LENGTH;
 

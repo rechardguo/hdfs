@@ -1,4 +1,4 @@
-package rechard.learn.namenode.network;
+package rechard.learn.dfs.common.network;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
