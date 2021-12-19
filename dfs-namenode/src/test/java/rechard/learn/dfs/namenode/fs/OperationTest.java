@@ -3,8 +3,9 @@ package rechard.learn.dfs.namenode.fs;
 import cn.hutool.core.io.FileUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import rechard.learn.namenode.fs.EditLog;
-import rechard.learn.namenode.fs.OperationLog;
+import rechard.learn.dfs.common.constant.NameNodeConstant;
+import rechard.learn.dfs.common.fs.OperationLog;
+import rechard.learn.dfs.common.fs.OperationLogItem;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,20 +34,23 @@ public class OperationTest {
 
     @Test
     public void testAppendLog() throws IOException {
-        OperationLog log = new OperationLog(storeDir);
         long startTxId = 1000;
-        log.createEditLog(startTxId, 100);//100k
+        File logFile = new File(storeDir + "/" + startTxId + ".log");
+        OperationLog log = new OperationLog(logFile);
+
+        log.createOperationLog(startTxId, 100);//100k
         for (int i = 0; i < 10; i++) {
-            EditLog editLog = new EditLog();
-            editLog.setTxId(startTxId + i);
-            editLog.setPath("/a/b/c");
-            editLog.setOpType(NameNodeConstant.MKDIR);
+            OperationLogItem operationLogItem = new OperationLogItem();
+            operationLogItem.setTxId(startTxId + i);
+            operationLogItem.setPath("/a/b/c");
+            operationLogItem.setOpType(NameNodeConstant.MKDIR);
             Map attr = new HashMap();
-            editLog.setAttr(attr);
-            log.saveLog(editLog);
+            operationLogItem.setAttr(attr);
+            log.saveLog(operationLogItem);
         }
         //检查文件数
-        OperationLog loadLog = OperationLog.loadLogFile(storeDir + File.separator + startTxId);
+        //OperationLog loadLog = OperationLog.loadLogFile(storeDir + File.separator + startTxId);
+
 
     }
 

@@ -9,6 +9,8 @@ public class NameNodeConstant {
     public static final String FETCH_FSIMAGE = "FETCH_FSIMAGE";
     public static final String FETCH_EDITLOG = "FETCH_EDITLOG";
 
+    public static final String FS_IMAGE_FILE = "%%FS_IMAGE_FILE%%";
+
     public static final int MAX_MSG_LENGTH = 1024 * 1024 * 4; //最大4m
 
     public static final int MKDIR = 1;

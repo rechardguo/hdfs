@@ -35,7 +35,7 @@ public class PacketEncoder extends MessageToMessageEncoder<Packet> {
                             + HEADER_LENGTH
                             + (headerBytes != null ? headerBytes.length : 0)
                             + BODY_LENGTH
-                            + msg.getBody().length);
+                            + (msg.getBody() != null ? msg.getBody().length : 0));
             byteBuf.writeInt(msg.getMsgType());
             if (headerBytes == null) {
                 byteBuf.writeInt(0);
@@ -43,8 +43,12 @@ public class PacketEncoder extends MessageToMessageEncoder<Packet> {
                 byteBuf.writeInt(headerBytes.length);
                 byteBuf.writeBytes(headerBytes);
             }
-            byteBuf.writeInt(msg.getBody().length);
-            byteBuf.writeBytes(msg.getBody());
+            if (msg.getBody() == null) {
+                byteBuf.writeInt(0);
+            } else {
+                byteBuf.writeInt(msg.getBody().length);
+                byteBuf.writeBytes(msg.getBody());
+            }
             out.add(byteBuf);
         } catch (Exception e) {
             log.error("error in encode packet", e);

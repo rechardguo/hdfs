@@ -7,7 +7,8 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import static rechard.learn.namenode.constant.NameNodeConstant.MAX_MSG_LENGTH;
+import static rechard.learn.dfs.common.constant.NameNodeConstant.MAX_MSG_LENGTH;
+
 
 /**
  * @author Rechard

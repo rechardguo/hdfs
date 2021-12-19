@@ -1,7 +1,6 @@
-package rechard.learn.namenode.fs;
+package rechard.learn.dfs.common.fs;
 
-
-import rechard.learn.namenode.exeception.NameNodeException;
+import rechard.learn.dfs.common.exeception.NameNodeException;
 
 import java.util.Map;
 

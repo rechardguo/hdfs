@@ -1,6 +1,7 @@
 package rechard.learn.namenode;
 
 import cn.hutool.core.io.FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import rechard.learn.dfs.common.constant.NameNodeConstant;
 import rechard.learn.namenode.config.NameNodeConfig;
 
@@ -15,6 +16,7 @@ import java.util.Properties;
  *
  * @author Rechard
  **/
+@Slf4j
 public class NameNodeBootstrap {
     public static void main(String[] args) {
         String dfshome = System.getenv(NameNodeConstant.DFSHOME);
@@ -52,6 +54,12 @@ public class NameNodeBootstrap {
         }
         nameNodeConfig.setDfsHome(dfshome);
         NameNode nameNode = new NameNode(nameNodeConfig);
-        nameNode.start();
+        try {
+            nameNode.start();
+        } catch (Exception e) {
+            //e.printStackTrace();
+            log.error("namenode cant not start with error {}", e);
+            System.exit(-2);
+        }
     }
 }

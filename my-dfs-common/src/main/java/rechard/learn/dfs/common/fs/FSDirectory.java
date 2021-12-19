@@ -1,13 +1,17 @@
-package rechard.learn.namenode.fs;
+package rechard.learn.dfs.common.fs;
 
+import com.ruyuan.dfs.model.backup.EditLog;
 import com.ruyuan.dfs.model.backup.INode;
-import rechard.learn.namenode.enums.NodeType;
-import rechard.learn.namenode.exeception.NameNodeException;
+import rechard.learn.dfs.common.constant.NodeType;
+import rechard.learn.dfs.common.exeception.NameNodeException;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static rechard.learn.dfs.common.constant.NameNodeConstant.DELETE_FILE;
+import static rechard.learn.dfs.common.constant.NameNodeConstant.MKDIR;
 
 /**
  * 目录结构
@@ -23,6 +27,10 @@ public class FSDirectory {
 
     public FSDirectory() {
         this.root = new Node("/", NodeType.DIRECTORY.getValue());
+    }
+
+    public void setRoot(Node node) {
+        this.root = node;
     }
 
 
@@ -160,5 +168,19 @@ public class FSDirectory {
         return path.trim();
     }
 
+    /**
+     * 通过editlog进行回放
+     *
+     * @param editLog
+     */
+    public void replay(EditLog editLog) throws NameNodeException {
+        int opType = editLog.getOpType();
+        switch (opType) {
+            case MKDIR:
+                mkdir(editLog.getPath(), editLog.getAttrMap());
+            case DELETE_FILE:
+                deleteFile(editLog.getPath());
 
+        }
+    }
 }

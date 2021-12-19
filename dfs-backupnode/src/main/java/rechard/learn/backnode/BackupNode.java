@@ -23,6 +23,7 @@ public class BackupNode {
         //1.启动backup node netty server
         //nettyServer = new NettyServer(backupNodeConfig);
         //nettyServer.start();
+
         //2.向master连接
         nettyClient = new NameNodeClient(backupNodeConfig, scheduler);
         nettyClient.connectMaster();

@@ -1,16 +1,18 @@
-package rechard.learn.namenode.fs;
+package rechard.learn.dfs.common.fs;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.ruyuan.dfs.common.utils.ByteUtil;
 import com.ruyuan.dfs.model.backup.INode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 /**
  * 元数据内存影像
@@ -43,12 +45,16 @@ public class FsImage {
         // 文件长度包括 4位文件长度 + 8位txId + 内容长度
         int fileLength = LENGTH_OF_FILE_LENGTH_FIELD + LENGTH_OF_MAX_TX_ID_FIELD + body.length;
         byte[] ret = new byte[fileLength];
-        ByteUtil.setInt(ret, 0, fileLength);
-        ByteUtil.setLong(ret, LENGTH_OF_FILE_LENGTH_FIELD, maxTxId);
+        //ByteUtil.setInt(ret, 0, fileLength);
+        //ByteUtil.setLong(ret, LENGTH_OF_FILE_LENGTH_FIELD, maxTxId);
         System.arraycopy(body, 0, ret, LENGTH_OF_FILE_LENGTH_FIELD + LENGTH_OF_MAX_TX_ID_FIELD, body.length);
         return ret;
     }
 
+    public static FsImage parseFile(File file) throws IOException {
+        RandomAccessFile accessFile = new RandomAccessFile(file, "rw");
+        return parse(accessFile.getChannel(), file.getPath(), file.length());
+    }
 
     /**
      * 解析FsImage文件
@@ -59,7 +65,7 @@ public class FsImage {
      * @return 如果合法返回 FsImage，不合法返回null
      * @throws IOException IO异常，文件不存在
      */
-    public static FsImage parse(FileChannel channel, String path, int length) throws IOException {
+    private static FsImage parse(FileChannel channel, String path, long length) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(LENGTH_OF_FILE_LENGTH_FIELD + LENGTH_OF_MAX_TX_ID_FIELD);
         channel.read(buffer);
         buffer.flip();
@@ -123,6 +129,36 @@ public class FsImage {
             return -1;
         } else {
             return buffer.getLong();
+        }
+    }
+
+
+    public Node getRoot() {
+        Node node = null;
+        if (iNode != null) {
+            node = new Node();
+            node.setPath(iNode.getPath());
+            node.setType(iNode.getType());
+            node.setAttr(iNode.getAttrMap());
+            inode2Node0(iNode, node);
+        }
+        return node;
+    }
+
+    private void inode2Node0(INode iNode, Node parent) {
+        if (iNode != null) {
+            Node node = new Node();
+            node.setPath(iNode.getPath());
+            node.setType(iNode.getType());
+            node.setAttr(iNode.getAttrMap());
+            node.setParent(parent);
+            parent.getChildren().put(node.getPath(), node);
+            List<INode> childrenList = iNode.getChildrenList();
+            if (childrenList != null && !childrenList.isEmpty()) {
+                for (INode ch : childrenList) {
+                    inode2Node0(ch, node);
+                }
+            }
         }
     }
 

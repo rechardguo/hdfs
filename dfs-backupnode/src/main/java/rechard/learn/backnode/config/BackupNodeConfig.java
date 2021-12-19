@@ -25,6 +25,7 @@ public class BackupNodeConfig {
         return BackupNodeConfig.builder()
                 .port(port)
                 .masterAddr(masterAddr)
+                .masterPass(masterPass)
                 .build();
     }
 

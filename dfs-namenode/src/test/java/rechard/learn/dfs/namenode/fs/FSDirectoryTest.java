@@ -3,9 +3,9 @@ package rechard.learn.dfs.namenode.fs;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import rechard.learn.namenode.exeception.NameNodeException;
-import rechard.learn.namenode.fs.FSDirectory;
-import rechard.learn.namenode.fs.Node;
+import rechard.learn.dfs.common.exeception.NameNodeException;
+import rechard.learn.dfs.common.fs.FSDirectory;
+import rechard.learn.dfs.common.fs.Node;
 
 import java.util.HashMap;
 import java.util.Map;

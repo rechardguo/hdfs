@@ -40,7 +40,7 @@ public class BackNodeBootstrap {
                 try {
                     Properties properties = new Properties();
                     properties.load(is);
-                    backupNodeConfig.loadFromResource(properties);
+                    backupNodeConfig = backupNodeConfig.loadFromResource(properties);
                 } catch (IOException e) {
                     System.err.println("load config file fail as" + e.getMessage());
                     System.exit(-1);

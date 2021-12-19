@@ -1,23 +1,30 @@
 package rechard.learn.namenode.processor.handler;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.ruyuan.dfs.model.client.MkdirRequest;
 import com.ruyuan.dfs.model.namenode.NameNodeAwareRequest;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import rechard.learn.dfs.common.constant.MsgType;
+import rechard.learn.dfs.common.exeception.NameNodeException;
+import rechard.learn.dfs.common.fs.FSDirectory;
+import rechard.learn.dfs.common.fs.FsImage;
 import rechard.learn.dfs.common.network.Packet;
+import rechard.learn.dfs.common.network.file.FSImgSendTask;
 import rechard.learn.namenode.config.NameNodeConfig;
-import rechard.learn.namenode.fs.FSDirectory;
-import rechard.learn.namenode.fs.FsImage;
 import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.peer.PeerNode;
+import rechard.learn.namenode.sync.SyncTask;
+import rechard.learn.namenode.sync.SyncTaskFuture;
+import rechard.learn.namenode.sync.Synctor;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import static rechard.learn.dfs.common.constant.MsgType.BACK_NODE_AUTH_RESPONSE;
-import static rechard.learn.dfs.common.constant.MsgType.BACK_NODE_FETCH_FSIMAGE_RESPONSE;
+import static rechard.learn.dfs.common.constant.NameNodeConstant.FS_IMAGE_FILE;
 
 /**
  * @author Rechard
@@ -28,6 +35,7 @@ public class NameNodeApis {
     private ControllerManager controllerManager;
     private FSDirectory fsDirectory;
     private NameNodeConfig nameNodeConfig;
+    private Synctor synctor = new Synctor();
 
     public NameNodeApis(ControllerManager controllerManager, NameNodeConfig nameNodeConfig, FSDirectory fsDirectory) {
         this.controllerManager = controllerManager;
@@ -54,6 +62,7 @@ public class NameNodeApis {
                 }
             }
         }*/
+        log.info("receive msgType={}", msgType);
         switch (msgType) {
             case NAME_NODE_PEER_AWARE:
                 processNamenodeAwares(p, ctx);
@@ -61,16 +70,44 @@ public class NameNodeApis {
                 handleAuth(p, ctx);
             case BACK_NODE_FETCH_FSIMAGE_REQUEST:
                 handleImageFetch(p, ctx);
-
+            case FS_OP_MKDIR_REQUEST:
+                handleMkdir(p, ctx);
         }
+    }
+
+    private void handleMkdir(Packet p, ChannelHandlerContext ctx) {
+        byte[] bodys = p.getBody();
+        try {
+            //1.本地创建成功
+            MkdirRequest mkdirRequest = MkdirRequest.parseFrom(bodys);
+            fsDirectory.mkdir(mkdirRequest.getPath(), mkdirRequest.getAttrMap());
+            //2.本地记录到 editlog
+
+            //3.同步到backnode成功
+            long txid = System.currentTimeMillis();
+            SyncTaskFuture future = synctor.addTask(new SyncTask(txid));
+            int syncResult = future.get();//等待结果完成，这里同步等待，参考rocketmq做法，如果等待过长也会返回，但返回的结果是backnode_timeout
+            //3.返回同步结果给客户端
+            //让客户端来选择
+            Map<String, Integer> map = new HashMap<>();
+            map.put("result", syncResult);
+            Packet packet = Packet.builder().msgType(BACK_NODE_AUTH_RESPONSE.code())
+                    .header(map)
+                    .build();
+            ctx.channel().writeAndFlush(packet);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        } catch (NameNodeException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void handleImageFetch(Packet p, ChannelHandlerContext ctx) {
         FsImage fsImage = fsDirectory.getFsImage();
-        Packet packet = Packet.builder().msgType(BACK_NODE_FETCH_FSIMAGE_RESPONSE.code())
-                //  .body()
-                .build();
-        ctx.channel().writeAndFlush(packet);
+        byte[] bytes = fsImage.toByteArray();
+        FSImgSendTask task = new FSImgSendTask(bytes, FS_IMAGE_FILE, (SocketChannel) ctx.channel());
+        task.execute(true);
     }
 
     private void handleAuth(Packet p, ChannelHandlerContext ctx) {

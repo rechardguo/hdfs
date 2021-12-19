@@ -1,4 +1,4 @@
-package rechard.learn.namenode.exeception;
+package rechard.learn.dfs.common.exeception;
 
 /**
  * @author Rechard

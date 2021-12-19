@@ -88,6 +88,7 @@ public class NameNodeClientChannelHandler extends ChannelInboundHandlerAdapter {
             case BACK_NODE_FETCH_EDITLOG_RESPONSE:
                 handleEditLog(ctx, packet);
             case BACK_NODE_FETCH_FSIMAGE_RESPONSE:
+                handleFSImgFetch(ctx, packet);
         }
     }
 
@@ -107,12 +108,16 @@ public class NameNodeClientChannelHandler extends ChannelInboundHandlerAdapter {
             String result = respHeader.get("result");
             if (result.equals("ok")) {
                 notifyAll();
+                //检查是否自己有fsimage,如果没有就需要发送去拉取fsimage到本地
                 this.scheduler.scheduleOnce(FETCH_FSIMAGE, () -> {
+                    //判断是否召集有fsimage,如果没就需要去拉取
+                    //内存里是否有数据结构
                     Packet<Object> fetchImgRequest = Packet.builder()
                             .msgType(BACK_NODE_FETCH_FSIMAGE_REQUEST.code())
                             .build();
                     ctx.channel().writeAndFlush(fetchImgRequest);
                 });
+
                 this.scheduler.schedule(FETCH_EDITLOG, () -> {
 
                 }, 0, 10, TimeUnit.SECONDS); //每10s同步

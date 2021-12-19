@@ -6,16 +6,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.fs.FSDirectory;
 import rechard.learn.dfs.common.network.BaseChannelInitializer;
 import rechard.learn.dfs.common.network.PacketDecoder;
 import rechard.learn.dfs.common.network.PacketEncoder;
+import rechard.learn.dfs.common.utils.DefaultScheduler;
 import rechard.learn.namenode.config.NameNodeConfig;
-import rechard.learn.namenode.fs.FSDirectory;
 import rechard.learn.namenode.manager.ControllerManager;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author Rechard
@@ -25,24 +23,27 @@ public class NettyServer {
     private NameNodeConfig nameNodeConfig;
     private ControllerManager controllerManager;
     private FSDirectory fsDirectory;
+    private DefaultScheduler scheduler;
 
-    public NettyServer(NameNodeConfig nameNodeConfig, ControllerManager controllerManager, FSDirectory fsDirectory) {
+    public NettyServer(NameNodeConfig nameNodeConfig, ControllerManager controllerManager,
+                       FSDirectory fsDirectory, DefaultScheduler scheduler) {
         this.controllerManager = controllerManager;
         this.nameNodeConfig = nameNodeConfig;
         this.fsDirectory = fsDirectory;
+        this.scheduler = scheduler;
     }
 
     public void start() {
 
         BaseChannelInitializer serverChannelInitializer = new BaseChannelInitializer();
-        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        //ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
         //outbound
         serverChannelInitializer.addHandler(() -> new LengthFieldPrepender(4));
         serverChannelInitializer.addHandler(PacketEncoder::new);
         //inbound
         serverChannelInitializer.addHandler(PacketDecoder::new);//客户端使用stringEncoder，则这里StringDecoder解析
         serverChannelInitializer.addHandler(() -> {
-            return new NettyServerChannelHandler(threadPool,
+            return new NettyServerChannelHandler(scheduler,
                     new NameNodeApis(controllerManager, nameNodeConfig, fsDirectory));
         });
 

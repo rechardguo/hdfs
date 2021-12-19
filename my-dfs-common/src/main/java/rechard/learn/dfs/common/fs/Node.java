@@ -1,8 +1,8 @@
-package rechard.learn.namenode.fs;
+package rechard.learn.dfs.common.fs;
 
 import com.ruyuan.dfs.model.backup.INode;
 import lombok.Data;
-import rechard.learn.namenode.enums.NodeType;
+import rechard.learn.dfs.common.constant.NodeType;
 
 import java.util.*;
 
@@ -68,5 +68,6 @@ public class Node {
         builder.addAllChildren(tmpNode);
         return builder.build();
     }
+
 
 }

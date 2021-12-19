@@ -64,7 +64,7 @@ public class NameNodeClient {
                     log.error("connect to namenode server{}:{} fail!", host, port);
                 }
             });
-            // Wait until the connection is closed.
+            // Wait untdil the connection is closed.
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             log.error("connect to namenode server{}:{} fail!", host, port);

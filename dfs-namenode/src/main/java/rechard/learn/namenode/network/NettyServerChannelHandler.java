@@ -2,9 +2,8 @@ package rechard.learn.namenode.network;
 
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import rechard.learn.dfs.common.utils.DefaultScheduler;
 import rechard.learn.namenode.processor.handler.NameNodeApis;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Rechard
@@ -12,8 +11,8 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class NettyServerChannelHandler extends NettyChannelHandler {
 
-    public NettyServerChannelHandler(ExecutorService executorService, NameNodeApis nameNodeApis) {
-        super(executorService, nameNodeApis);
+    public NettyServerChannelHandler(DefaultScheduler scheduler, NameNodeApis nameNodeApis) {
+        super(scheduler, nameNodeApis);
     }
 
     @Override

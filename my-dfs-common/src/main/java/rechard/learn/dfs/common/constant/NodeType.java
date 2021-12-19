@@ -1,4 +1,4 @@
-package rechard.learn.namenode.enums;
+package rechard.learn.dfs.common.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

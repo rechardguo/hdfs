@@ -2,9 +2,10 @@ package rechard.learn.namenode.config;
 
 import io.netty.util.internal.StringUtil;
 import lombok.Data;
-import rechard.learn.namenode.exeception.NodeNodeFileParseException;
+import rechard.learn.dfs.common.exeception.NodeNodeFileParseException;
 import rechard.learn.namenode.peer.PeerNode;
 
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -42,5 +43,14 @@ public class NameNodeConfig {
 
     public boolean authRequired() {
         return !StringUtil.isNullOrEmpty(this.pass);
+    }
+
+
+    public File getFsimgDir() {
+        return new File(this.dfsHome + File.separatorChar + "fsimg");
+    }
+
+    public File getEditLogDir() {
+        return new File(this.dfsHome + File.separatorChar + "log");
     }
 }
